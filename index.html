@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Interactive Learning - For C++ & Python Engineers</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h1>🦀 Rust 互動學習</h1>
+            <p class="subtitle">For C++ & Python Engineers</p>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="globalProgress">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+            <span class="progress-text" id="progressText">0% 完成</span>
+        </div>
+        <ul id="lessonList" class="lesson-list"></ul>
+        <div class="sidebar-footer">
+            <a href="https://doc.rust-lang.org/book/" target="_blank">📖 The Rust Book</a>
+            <a href="https://doc.rust-lang.org/rust-by-example/" target="_blank">📝 Rust by Example</a>
+            <a href="https://play.rust-lang.org/" target="_blank">🛝 Rust Playground</a>
+        </div>
+    </nav>
+
+    <main id="mainContent">
+        <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">☰</button>
+
+        <div id="welcomeScreen" class="welcome-screen">
+            <div class="welcome-content">
+                <h1>🦀 歡迎來到 Rust 互動學習平台</h1>
+                <p class="welcome-desc">專為有 <strong>C++</strong> 和 <strong>Python</strong> 經驗的工程師設計</p>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🔄</span>
+                        <h3>語言對比</h3>
+                        <p>每個概念都附有 C++ 和 Python 的對照範例，快速理解差異</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
+                        <h3>線上編譯</h3>
+                        <p>內建 Rust Playground 編譯器，即時執行程式碼</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🏋️</span>
+                        <h3>互動練習</h3>
+                        <p>每個章節包含練習題，動手修改並驗證結果</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">📊</span>
+                        <h3>進度追蹤</h3>
+                        <p>自動儲存學習進度，隨時從中斷處繼續</p>
+                    </div>
+                </div>
+                <button class="btn-start" onclick="startLearning()">開始學習 →</button>
+            </div>
+        </div>
+
+        <div id="lessonView" class="lesson-view" style="display:none;">
+            <div class="lesson-header">
+                <span class="lesson-badge" id="lessonBadge"></span>
+                <h2 id="lessonTitle"></h2>
+            </div>
+            <div id="lessonContent" class="lesson-content"></div>
+            <div class="lesson-nav">
+                <button class="btn-nav" id="prevBtn" onclick="navigateLesson(-1)">← 上一課</button>
+                <button class="btn-complete" id="completeBtn" onclick="markComplete()">✓ 標記完成</button>
+                <button class="btn-nav" id="nextBtn" onclick="navigateLesson(1)">下一課 →</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="lessons.js"></script>
+    <script src="compiler.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
