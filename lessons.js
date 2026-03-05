@@ -2531,4 +2531,594 @@ let even_count = even_handle.join().unwrap();</code></pre></div>
 </div>
 `
 },
+// ============================================
+// Section: 實戰應用
+// ============================================
+{
+    id: 'ffi-interop',
+    section: '實戰應用',
+    title: '從 C++/Python 呼叫 Rust',
+    badge: '第 16 課',
+    content: () => `
+<h3>為什麼要從其他語言呼叫 Rust？</h3>
+<p>Rust 的高效能和記憶體安全使它成為撰寫<strong>效能關鍵元件</strong>的理想選擇。你可以把計算密集的核心用 Rust 寫成函式庫，然後從 C++、Python 或其他語言呼叫，兼顧開發效率和執行效能。</p>
+
+<div class="info-box tip">
+    <div class="box-title">💡 常見應用場景</div>
+    <p>Python 科學計算的底層加速（類似 NumPy 用 C 寫核心）、C++ 專案中逐步替換不安全的模組、跨平台共享函式庫、WebAssembly 編譯等。</p>
+</div>
+
+<h3>第一步：建立 Rust 共享函式庫</h3>
+<p>要讓其他語言呼叫 Rust 程式碼，需要透過 <strong>FFI (Foreign Function Interface)</strong>，將 Rust 函式導出為 C ABI 相容的介面。</p>
+
+<h4>Cargo.toml 設定</h4>
+${createPlayground('ffi-cargo',
+\`# Cargo.toml
+[package]
+name = "mathlib"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "mathlib"
+crate-type = ["cdylib"]  # 產生 .so (Linux) / .dll (Windows) / .dylib (macOS)\`,
+null, null, { editable: false })}
+
+<h4>Rust 函式庫程式碼 (src/lib.rs)</h4>
+${createPlayground('ffi-lib',
+\`use std::ffi::{CStr, CString};
+use std::os::raw::c_char;
+
+// === 基本數值運算 ===
+
+/// 計算費波那契數
+#[no_mangle]
+pub extern "C" fn fibonacci(n: u32) -> u64 {
+    if n <= 1 { return n as u64; }
+    let mut a: u64 = 0;
+    let mut b: u64 = 1;
+    for _ in 2..=n {
+        let temp = a + b;
+        a = b;
+        b = temp;
+    }
+    b
+}
+
+/// 計算陣列的統計資訊
+#[repr(C)]
+pub struct Stats {
+    pub sum: f64,
+    pub mean: f64,
+    pub min: f64,
+    pub max: f64,
+    pub count: usize,
+}
+
+#[no_mangle]
+pub extern "C" fn compute_stats(data: *const f64, len: usize) -> Stats {
+    assert!(!data.is_null());
+    let slice = unsafe { std::slice::from_raw_parts(data, len) };
+
+    let sum: f64 = slice.iter().sum();
+    let min = slice.iter().cloned().fold(f64::INFINITY, f64::min);
+    let max = slice.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+
+    Stats {
+        sum,
+        mean: sum / len as f64,
+        min,
+        max,
+        count: len,
+    }
+}
+
+// === 字串處理 ===
+
+/// 接收 C 字串，回傳處理後的 C 字串
+/// 呼叫端必須用 free_string() 釋放回傳值
+#[no_mangle]
+pub extern "C" fn to_uppercase(input: *const c_char) -> *mut c_char {
+    let c_str = unsafe { CStr::from_ptr(input) };
+    let rust_str = c_str.to_str().unwrap_or("");
+    let upper = rust_str.to_uppercase();
+    CString::new(upper).unwrap().into_raw()
+}
+
+/// 釋放 Rust 分配的字串
+#[no_mangle]
+pub extern "C" fn free_string(s: *mut c_char) {
+    if !s.is_null() {
+        unsafe { drop(CString::from_raw(s)); }
+    }
+}
+
+fn main() {
+    // 測試函式
+    println!("fib(10) = {}", fibonacci(10));
+
+    let data = vec![3.0, 1.0, 4.0, 1.0, 5.0, 9.0];
+    let stats = compute_stats(data.as_ptr(), data.len());
+    println!("sum={}, mean={:.2}, min={}, max={}",
+             stats.sum, stats.mean, stats.min, stats.max);
+}\`,
+null, null)}
+
+<div class="info-box warning">
+    <div class="box-title">⚠️ FFI 關鍵要素</div>
+    <p><code>#[no_mangle]</code> — 防止 Rust 改變函式名稱，讓其他語言找得到。<br>
+    <code>extern "C"</code> — 使用 C 呼叫慣例（ABI），確保跨語言相容。<br>
+    <code>#[repr(C)]</code> — 讓 struct 的記憶體佈局與 C 相同。<br>
+    <code>cdylib</code> — 編譯為 C 動態函式庫格式。</p>
+</div>
+
+<h3>從 C++ 呼叫 Rust</h3>
+<p>C++ 透過 C ABI 直接呼叫 Rust 函式庫，效能開銷幾乎為零。步驟：<strong>編譯 Rust → 寫 C++ header → 連結</strong>。</p>
+
+<h4>步驟 1：編譯 Rust 函式庫</h4>
+${createPlayground('ffi-cpp-build',
+\`// 終端機指令：
+// $ cargo build --release
+// 產出：target/release/libmathlib.so (Linux)
+//       target/release/libmathlib.dylib (macOS)
+//       target/release/mathlib.dll (Windows)
+
+fn main() {
+    println!("編譯指令：cargo build --release");
+    println!("產出位置：target/release/libmathlib.so");
+}\`,
+\`// ---- 步驟 2：C++ 標頭檔 (mathlib.h) ----
+#pragma once
+#include <cstdint>
+#include <cstddef>
+
+extern "C" {
+    // 數值運算
+    uint64_t fibonacci(uint32_t n);
+
+    // 統計結構
+    struct Stats {
+        double sum;
+        double mean;
+        double min;
+        double max;
+        size_t count;
+    };
+
+    Stats compute_stats(const double* data, size_t len);
+
+    // 字串處理
+    char* to_uppercase(const char* input);
+    void free_string(char* s);
+}
+\`,
+null)}
+
+<h4>步驟 3：C++ 主程式與編譯</h4>
+${createPlayground('ffi-cpp-main',
+\`// 在 Rust 端確認 Cargo.toml 設定正確：
+// [lib]
+// crate-type = ["cdylib"]
+//
+// 編譯：cargo build --release
+
+fn main() {
+    println!("Rust 函式庫已準備好，等待 C++ 呼叫！");
+}\`,
+\`// main.cpp — 呼叫 Rust 函式庫
+#include <iostream>
+#include <vector>
+#include <string>
+#include "mathlib.h"
+
+int main() {
+    // --- 呼叫 fibonacci ---
+    std::cout << "=== Fibonacci ===" << std::endl;
+    for (uint32_t i = 0; i <= 10; i++) {
+        std::cout << "fib(" << i << ") = " << fibonacci(i) << std::endl;
+    }
+
+    // --- 呼叫 compute_stats ---
+    std::cout << "\\n=== Statistics ===" << std::endl;
+    std::vector<double> data = {3.0, 1.0, 4.0, 1.0, 5.0, 9.0, 2.0, 6.0};
+    Stats stats = compute_stats(data.data(), data.size());
+
+    std::cout << "Count: " << stats.count << std::endl;
+    std::cout << "Sum:   " << stats.sum << std::endl;
+    std::cout << "Mean:  " << stats.mean << std::endl;
+    std::cout << "Min:   " << stats.min << std::endl;
+    std::cout << "Max:   " << stats.max << std::endl;
+
+    // --- 呼叫字串處理 ---
+    std::cout << "\\n=== String ===" << std::endl;
+    char* result = to_uppercase("hello from c++");
+    std::cout << "Uppercase: " << result << std::endl;
+    free_string(result);  // 重要！用 Rust 的 free 釋放
+
+    return 0;
+}
+
+// 編譯指令（Linux）：
+// g++ -o main main.cpp -L../target/release -lmathlib -Wl,-rpath,../target/release
+//
+// 編譯指令（macOS）：
+// g++ -o main main.cpp -L../target/release -lmathlib -Wl,-rpath,@loader_path/../target/release
+\`,
+null)}
+
+<div class="info-box cpp">
+    <div class="box-title">🔷 C++ 整合重點</div>
+    <p><strong>型別對應：</strong><code>u32</code>↔<code>uint32_t</code>、<code>f64</code>↔<code>double</code>、<code>usize</code>↔<code>size_t</code>、<code>*const c_char</code>↔<code>const char*</code>。<br>
+    <strong>記憶體管理：</strong>Rust 分配的記憶體必須用 Rust 提供的函式釋放（如 <code>free_string</code>），不能直接用 C++ 的 <code>delete</code>。<br>
+    <strong>進階工具：</strong>可以用 <a href="https://github.com/aspect-build/aspect-cli" style="color:var(--accent-cyan)">cbindgen</a> 自動從 Rust 原始碼產生 C/C++ 標頭檔，或用 <a href="https://cxx.rs" style="color:var(--accent-cyan)">cxx</a> crate 獲得更安全的 C++/Rust 互操作。</p>
+</div>
+
+<h3>從 Python 呼叫 Rust</h3>
+<p>Python 呼叫 Rust 有兩種主要方式：<strong>ctypes</strong>（直接呼叫動態函式庫）和 <strong>PyO3</strong>（建立原生 Python 模組）。</p>
+
+<h4>方式一：ctypes — 直接呼叫 .so/.dll</h4>
+<p>最簡單的方式，不需要額外的 Rust crate，直接載入編譯好的函式庫。</p>
+
+${createPlayground('ffi-py-ctypes',
+\`// 同樣使用前面的 Rust 函式庫
+// cargo build --release 編譯後即可使用
+
+fn main() {
+    println!("使用 ctypes 不需修改 Rust 程式碼！");
+    println!("直接用 cargo build --release 編譯即可。");
+}\`,
+null,
+\`import ctypes
+import os
+
+# --- 載入 Rust 函式庫 ---
+lib = ctypes.CDLL("./target/release/libmathlib.so")  # Linux
+# lib = ctypes.CDLL("./target/release/libmathlib.dylib")  # macOS
+# lib = ctypes.CDLL("./target/release/mathlib.dll")        # Windows
+
+# --- fibonacci ---
+lib.fibonacci.argtypes = [ctypes.c_uint32]
+lib.fibonacci.restype = ctypes.c_uint64
+
+print("=== Fibonacci ===")
+for i in range(11):
+    print(f"fib({i}) = {lib.fibonacci(i)}")
+
+# --- compute_stats ---
+class Stats(ctypes.Structure):
+    _fields_ = [
+        ("sum", ctypes.c_double),
+        ("mean", ctypes.c_double),
+        ("min", ctypes.c_double),
+        ("max", ctypes.c_double),
+        ("count", ctypes.c_size_t),
+    ]
+
+lib.compute_stats.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
+lib.compute_stats.restype = Stats
+
+data = [3.0, 1.0, 4.0, 1.0, 5.0, 9.0, 2.0, 6.0]
+arr = (ctypes.c_double * len(data))(*data)
+stats = lib.compute_stats(arr, len(data))
+
+print(f"\\n=== Statistics ===")
+print(f"Count: {stats.count}")
+print(f"Sum:   {stats.sum}")
+print(f"Mean:  {stats.mean:.2f}")
+print(f"Min:   {stats.min}")
+print(f"Max:   {stats.max}")
+
+# --- 字串處理 ---
+lib.to_uppercase.argtypes = [ctypes.c_char_p]
+lib.to_uppercase.restype = ctypes.c_char_p
+lib.free_string.argtypes = [ctypes.c_char_p]
+
+result = lib.to_uppercase(b"hello from python")
+print(f"\\nUppercase: {result.decode('utf-8')}")
+# 注意：ctypes 的 c_char_p restype 會自動複製，
+# 但嚴謹做法應手動管理記憶體
+\`)}
+
+<h4>方式二：PyO3 — 建立原生 Python 模組（推薦）</h4>
+<p>PyO3 讓你用 Rust 寫出<strong>原生 Python 模組</strong>，提供更 Pythonic 的 API，支援 class、exception、type hint 等。搭配 <strong>maturin</strong> 工具，開發體驗非常流暢。</p>
+
+${createPlayground('ffi-pyo3-cargo',
+\`// Cargo.toml 設定
+// [package]
+// name = "mathlib"
+// version = "0.1.0"
+// edition = "2021"
+//
+// [lib]
+// name = "mathlib"
+// crate-type = ["cdylib"]
+//
+// [dependencies]
+// pyo3 = { version = "0.22", features = ["extension-module"] }
+
+// ---- src/lib.rs ----
+use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
+
+/// 計算費波那契數
+#[pyfunction]
+fn fibonacci(n: u32) -> u64 {
+    if n <= 1 { return n as u64; }
+    let (mut a, mut b) = (0u64, 1u64);
+    for _ in 2..=n {
+        let temp = a + b;
+        a = b;
+        b = temp;
+    }
+    b
+}
+
+/// 統計資訊類別
+#[pyclass]
+#[derive(Clone)]
+struct Stats {
+    #[pyo3(get)]
+    sum: f64,
+    #[pyo3(get)]
+    mean: f64,
+    #[pyo3(get)]
+    min: f64,
+    #[pyo3(get)]
+    max: f64,
+    #[pyo3(get)]
+    count: usize,
+}
+
+#[pymethods]
+impl Stats {
+    fn __repr__(&self) -> String {
+        format!("Stats(sum={}, mean={:.2}, min={}, max={}, count={})",
+                self.sum, self.mean, self.min, self.max, self.count)
+    }
+}
+
+/// 計算統計資訊
+#[pyfunction]
+fn compute_stats(data: Vec<f64>) -> PyResult<Stats> {
+    if data.is_empty() {
+        return Err(PyValueError::new_err("data cannot be empty"));
+    }
+    let sum: f64 = data.iter().sum();
+    let min = data.iter().cloned().fold(f64::INFINITY, f64::min);
+    let max = data.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    Ok(Stats {
+        sum, mean: sum / data.len() as f64, min, max, count: data.len(),
+    })
+}
+
+/// 批次字串轉大寫
+#[pyfunction]
+fn batch_uppercase(strings: Vec<String>) -> Vec<String> {
+    strings.into_iter().map(|s| s.to_uppercase()).collect()
+}
+
+/// Python 模組定義
+#[pymodule]
+fn mathlib(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(fibonacci, m)?)?;
+    m.add_function(wrap_pyfunction!(compute_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(batch_uppercase, m)?)?;
+    m.add_class::<Stats>()?;
+    Ok(())
+}
+
+fn main() {
+    // PyO3 模組不需要 main，這裡僅做語法展示
+    println!("PyO3 模組透過 maturin 編譯：");
+    println!("  pip install maturin");
+    println!("  maturin develop --release");
+}\`,
+null,
+\`# --- 安裝與使用 PyO3 模組 ---
+# 終端機：
+#   pip install maturin
+#   cd mathlib_project/
+#   maturin develop --release    # 編譯並安裝到當前 Python 環境
+
+import mathlib
+
+# 直接呼叫，就像一般的 Python 函式！
+print("=== Fibonacci ===")
+for i in range(11):
+    print(f"fib({i}) = {mathlib.fibonacci(i)}")
+
+# 回傳 Python 物件
+print("\\n=== Statistics ===")
+stats = mathlib.compute_stats([3.0, 1.0, 4.0, 1.0, 5.0, 9.0])
+print(stats)          # Stats(sum=23, mean=3.83, ...)
+print(stats.mean)     # 直接存取屬性
+print(stats.max)
+
+# 支援 Python list 直接傳入
+print("\\n=== Batch Uppercase ===")
+results = mathlib.batch_uppercase(["hello", "world", "rust"])
+print(results)  # ['HELLO', 'WORLD', 'RUST']
+
+# 錯誤處理也會正確轉為 Python exception
+try:
+    mathlib.compute_stats([])
+except ValueError as e:
+    print(f"\\nCaught error: {e}")
+
+# --- 效能對比 ---
+import time
+
+def py_fibonacci(n):
+    if n <= 1: return n
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+n = 1000000
+start = time.time()
+for _ in range(100):
+    mathlib.fibonacci(40)
+rust_time = time.time() - start
+
+start = time.time()
+for _ in range(100):
+    py_fibonacci(40)
+py_time = time.time() - start
+
+print(f"\\n=== Performance ===")
+print(f"Rust: {rust_time:.4f}s")
+print(f"Python: {py_time:.4f}s")
+print(f"Speedup: {py_time/rust_time:.1f}x")
+\`)}
+
+<div class="info-box python">
+    <div class="box-title">🐍 ctypes vs PyO3 比較</div>
+    <p><strong>ctypes：</strong>零依賴、簡單快速，但需要手動定義型別、不支援 Python class、錯誤處理不方便。適合簡單的函式呼叫。<br>
+    <strong>PyO3：</strong>需要額外依賴，但提供完整的 Python 整合 — 自動型別轉換、Python class 支援、exception 處理、type hints。適合正式專案和發布 pip 套件。</p>
+</div>
+
+<h3>型別對應速查表</h3>
+<table>
+    <thead>
+        <tr><th>Rust 型別</th><th>C / C++ 型別</th><th>Python ctypes</th><th>PyO3 自動轉換</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>i32</code></td><td><code>int32_t</code></td><td><code>c_int32</code></td><td><code>i32</code> ↔ <code>int</code></td></tr>
+        <tr><td><code>u32</code></td><td><code>uint32_t</code></td><td><code>c_uint32</code></td><td><code>u32</code> ↔ <code>int</code></td></tr>
+        <tr><td><code>f64</code></td><td><code>double</code></td><td><code>c_double</code></td><td><code>f64</code> ↔ <code>float</code></td></tr>
+        <tr><td><code>bool</code></td><td><code>bool</code></td><td><code>c_bool</code></td><td><code>bool</code> ↔ <code>bool</code></td></tr>
+        <tr><td><code>usize</code></td><td><code>size_t</code></td><td><code>c_size_t</code></td><td><code>usize</code> ↔ <code>int</code></td></tr>
+        <tr><td><code>*const c_char</code></td><td><code>const char*</code></td><td><code>c_char_p</code></td><td><code>String</code> ↔ <code>str</code></td></tr>
+        <tr><td><code>Vec&lt;T&gt;</code></td><td><code>T* + len</code></td><td><code>POINTER(T)</code></td><td><code>Vec&lt;T&gt;</code> ↔ <code>list</code></td></tr>
+        <tr><td><code>#[repr(C)] struct</code></td><td><code>struct</code></td><td><code>Structure</code></td><td><code>#[pyclass]</code> ↔ <code>class</code></td></tr>
+    </tbody>
+</table>
+
+<div class="quiz-section">
+    <h4>📝 小測驗</h4>
+    <p>為什麼 Rust FFI 函式需要加上 <code>#[no_mangle]</code> 和 <code>extern "C"</code>？</p>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">A. 讓 Rust 編譯器做額外的安全檢查</button>
+    <button class="quiz-option" onclick="checkQuiz(this, true)">B. <code>#[no_mangle]</code> 保留原始函式名稱，<code>extern "C"</code> 使用 C 呼叫慣例，讓其他語言能正確找到並呼叫函式</button>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">C. 這只是 Rust 的慣例，不加也可以正常運作</button>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">D. 為了讓函式在多執行緒中安全使用</button>
+    <div class="quiz-feedback">正確！Rust 編譯器預設會 mangle（改變）函式名稱以支援泛型等功能。<code>#[no_mangle]</code> 保留原始名稱讓外部能找到。<code>extern "C"</code> 確保使用 C ABI，這是跨語言呼叫的通用標準。</div>
+</div>
+
+<div class="exercise-section">
+    <h4>🏋️ 練習：設計 FFI 介面</h4>
+    <p class="exercise-desc">完成下面的 Rust FFI 函式：實作一個可以被 C++/Python 呼叫的<strong>向量運算函式庫</strong>。</p>
+    ${createPlayground('ffi-ex1',
+\`use std::os::raw::c_char;
+use std::ffi::{CStr, CString};
+
+// TODO 1: 實作 dot_product — 計算兩個向量的內積
+// 參數：兩個 f64 指標和長度
+// 回傳：f64
+#[no_mangle]
+pub extern "C" fn dot_product(
+    a: *const f64, b: *const f64, len: usize
+) -> f64 {
+    todo!("實作 dot_product")
+}
+
+// TODO 2: 實作 scale_vector — 將向量中每個元素乘以 scalar
+// 參數：可變 f64 指標、長度、scalar
+// 注意：直接修改原始陣列（in-place）
+#[no_mangle]
+pub extern "C" fn scale_vector(
+    data: *mut f64, len: usize, scalar: f64
+) {
+    todo!("實作 scale_vector")
+}
+
+// 測試用的 main
+fn main() {
+    let a = vec![1.0, 2.0, 3.0];
+    let b = vec![4.0, 5.0, 6.0];
+    println!("dot product: {}", dot_product(a.as_ptr(), b.as_ptr(), a.len()));
+    // 預期: 1*4 + 2*5 + 3*6 = 32.0
+
+    let mut v = vec![1.0, 2.0, 3.0];
+    scale_vector(v.as_mut_ptr(), v.len(), 2.5);
+    println!("scaled: {:?}", v);
+    // 預期: [2.5, 5.0, 7.5]
+}\`,
+\`// C++ 呼叫端範例
+#include <iostream>
+#include <vector>
+
+extern "C" {
+    double dot_product(const double* a, const double* b, size_t len);
+    void scale_vector(double* data, size_t len, double scalar);
+}
+
+int main() {
+    std::vector<double> a = {1.0, 2.0, 3.0};
+    std::vector<double> b = {4.0, 5.0, 6.0};
+
+    double dp = dot_product(a.data(), b.data(), a.size());
+    std::cout << "Dot product: " << dp << std::endl;
+
+    scale_vector(a.data(), a.size(), 2.5);
+    std::cout << "Scaled: ";
+    for (auto x : a) std::cout << x << " ";
+    std::cout << std::endl;
+}
+\`,
+\`import ctypes
+
+lib = ctypes.CDLL("./target/release/libmathlib.so")
+
+# dot_product
+lib.dot_product.argtypes = [
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_size_t
+]
+lib.dot_product.restype = ctypes.c_double
+
+a = (ctypes.c_double * 3)(1.0, 2.0, 3.0)
+b = (ctypes.c_double * 3)(4.0, 5.0, 6.0)
+print(f"Dot product: {lib.dot_product(a, b, 3)}")
+
+# scale_vector
+lib.scale_vector.argtypes = [
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_size_t,
+    ctypes.c_double
+]
+
+data = (ctypes.c_double * 3)(1.0, 2.0, 3.0)
+lib.scale_vector(data, 3, 2.5)
+print(f"Scaled: {list(data)}")
+\`)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">兩個函式都需要先用 <code>unsafe { std::slice::from_raw_parts(ptr, len) }</code> 將原始指標轉為 Rust 切片。<code>dot_product</code> 可以用 <code>.iter().zip().map().sum()</code> 的迭代器鏈。<code>scale_vector</code> 需要用 <code>from_raw_parts_mut</code> 取得可變切片。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>#[no_mangle]
+pub extern "C" fn dot_product(
+    a: *const f64, b: *const f64, len: usize
+) -> f64 {
+    let a = unsafe { std::slice::from_raw_parts(a, len) };
+    let b = unsafe { std::slice::from_raw_parts(b, len) };
+    a.iter().zip(b.iter()).map(|(x, y)| x * y).sum()
+}
+
+#[no_mangle]
+pub extern "C" fn scale_vector(
+    data: *mut f64, len: usize, scalar: f64
+) {
+    let slice = unsafe { std::slice::from_raw_parts_mut(data, len) };
+    for x in slice.iter_mut() {
+        *x *= scalar;
+    }
+}</code></pre></div>
+    </div>
+</div>
+`
+},
 ];
