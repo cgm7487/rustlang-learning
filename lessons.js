@@ -2553,7 +2553,7 @@ let even_count = even_handle.join().unwrap();</code></pre></div>
 
 <h4>Cargo.toml 設定</h4>
 ${createPlayground('ffi-cargo',
-\`# Cargo.toml
+`# Cargo.toml
 [package]
 name = "mathlib"
 version = "0.1.0"
@@ -2561,12 +2561,12 @@ edition = "2021"
 
 [lib]
 name = "mathlib"
-crate-type = ["cdylib"]  # 產生 .so (Linux) / .dll (Windows) / .dylib (macOS)\`,
+crate-type = ["cdylib"]  # 產生 .so (Linux) / .dll (Windows) / .dylib (macOS)`,
 null, null, { editable: false })}
 
 <h4>Rust 函式庫程式碼 (src/lib.rs)</h4>
 ${createPlayground('ffi-lib',
-\`use std::ffi::{CStr, CString};
+`use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 
 // === 基本數值運算 ===
@@ -2641,7 +2641,7 @@ fn main() {
     let stats = compute_stats(data.as_ptr(), data.len());
     println!("sum={}, mean={:.2}, min={}, max={}",
              stats.sum, stats.mean, stats.min, stats.max);
-}\`,
+}`,
 null, null)}
 
 <div class="info-box warning">
@@ -2657,7 +2657,7 @@ null, null)}
 
 <h4>步驟 1：編譯 Rust 函式庫</h4>
 ${createPlayground('ffi-cpp-build',
-\`// 終端機指令：
+`// 終端機指令：
 // $ cargo build --release
 // 產出：target/release/libmathlib.so (Linux)
 //       target/release/libmathlib.dylib (macOS)
@@ -2666,8 +2666,8 @@ ${createPlayground('ffi-cpp-build',
 fn main() {
     println!("編譯指令：cargo build --release");
     println!("產出位置：target/release/libmathlib.so");
-}\`,
-\`// ---- 步驟 2：C++ 標頭檔 (mathlib.h) ----
+}`,
+`// ---- 步驟 2：C++ 標頭檔 (mathlib.h) ----
 #pragma once
 #include <cstdint>
 #include <cstddef>
@@ -2691,12 +2691,12 @@ extern "C" {
     char* to_uppercase(const char* input);
     void free_string(char* s);
 }
-\`,
+`,
 null)}
 
 <h4>步驟 3：C++ 主程式與編譯</h4>
 ${createPlayground('ffi-cpp-main',
-\`// 在 Rust 端確認 Cargo.toml 設定正確：
+`// 在 Rust 端確認 Cargo.toml 設定正確：
 // [lib]
 // crate-type = ["cdylib"]
 //
@@ -2704,8 +2704,8 @@ ${createPlayground('ffi-cpp-main',
 
 fn main() {
     println!("Rust 函式庫已準備好，等待 C++ 呼叫！");
-}\`,
-\`// main.cpp — 呼叫 Rust 函式庫
+}`,
+`// main.cpp — 呼叫 Rust 函式庫
 #include <iostream>
 #include <vector>
 #include <string>
@@ -2743,7 +2743,7 @@ int main() {
 //
 // 編譯指令（macOS）：
 // g++ -o main main.cpp -L../target/release -lmathlib -Wl,-rpath,@loader_path/../target/release
-\`,
+`,
 null)}
 
 <div class="info-box cpp">
@@ -2760,15 +2760,15 @@ null)}
 <p>最簡單的方式，不需要額外的 Rust crate，直接載入編譯好的函式庫。</p>
 
 ${createPlayground('ffi-py-ctypes',
-\`// 同樣使用前面的 Rust 函式庫
+`// 同樣使用前面的 Rust 函式庫
 // cargo build --release 編譯後即可使用
 
 fn main() {
     println!("使用 ctypes 不需修改 Rust 程式碼！");
     println!("直接用 cargo build --release 編譯即可。");
-}\`,
+}`,
 null,
-\`import ctypes
+`import ctypes
 import os
 
 # --- 載入 Rust 函式庫 ---
@@ -2817,13 +2817,13 @@ result = lib.to_uppercase(b"hello from python")
 print(f"\\nUppercase: {result.decode('utf-8')}")
 # 注意：ctypes 的 c_char_p restype 會自動複製，
 # 但嚴謹做法應手動管理記憶體
-\`)}
+`)}
 
 <h4>方式二：PyO3 — 建立原生 Python 模組（推薦）</h4>
 <p>PyO3 讓你用 Rust 寫出<strong>原生 Python 模組</strong>，提供更 Pythonic 的 API，支援 class、exception、type hint 等。搭配 <strong>maturin</strong> 工具，開發體驗非常流暢。</p>
 
 ${createPlayground('ffi-pyo3-cargo',
-\`// Cargo.toml 設定
+`// Cargo.toml 設定
 // [package]
 // name = "mathlib"
 // version = "0.1.0"
@@ -2912,9 +2912,9 @@ fn main() {
     println!("PyO3 模組透過 maturin 編譯：");
     println!("  pip install maturin");
     println!("  maturin develop --release");
-}\`,
+}`,
 null,
-\`# --- 安裝與使用 PyO3 模組 ---
+`# --- 安裝與使用 PyO3 模組 ---
 # 終端機：
 #   pip install maturin
 #   cd mathlib_project/
@@ -2970,7 +2970,7 @@ print(f"\\n=== Performance ===")
 print(f"Rust: {rust_time:.4f}s")
 print(f"Python: {py_time:.4f}s")
 print(f"Speedup: {py_time/rust_time:.1f}x")
-\`)}
+`)}
 
 <div class="info-box python">
     <div class="box-title">🐍 ctypes vs PyO3 比較</div>
@@ -3009,7 +3009,7 @@ print(f"Speedup: {py_time/rust_time:.1f}x")
     <h4>🏋️ 練習：設計 FFI 介面</h4>
     <p class="exercise-desc">完成下面的 Rust FFI 函式：實作一個可以被 C++/Python 呼叫的<strong>向量運算函式庫</strong>。</p>
     ${createPlayground('ffi-ex1',
-\`use std::os::raw::c_char;
+`use std::os::raw::c_char;
 use std::ffi::{CStr, CString};
 
 // TODO 1: 實作 dot_product — 計算兩個向量的內積
@@ -3043,8 +3043,8 @@ fn main() {
     scale_vector(v.as_mut_ptr(), v.len(), 2.5);
     println!("scaled: {:?}", v);
     // 預期: [2.5, 5.0, 7.5]
-}\`,
-\`// C++ 呼叫端範例
+}`,
+`// C++ 呼叫端範例
 #include <iostream>
 #include <vector>
 
@@ -3065,8 +3065,8 @@ int main() {
     for (auto x : a) std::cout << x << " ";
     std::cout << std::endl;
 }
-\`,
-\`import ctypes
+`,
+`import ctypes
 
 lib = ctypes.CDLL("./target/release/libmathlib.so")
 
@@ -3092,7 +3092,7 @@ lib.scale_vector.argtypes = [
 data = (ctypes.c_double * 3)(1.0, 2.0, 3.0)
 lib.scale_vector(data, 3, 2.5)
 print(f"Scaled: {list(data)}")
-\`)}
+`)}
     <div class="exercise-hint">
         <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
         <div class="hint-content">兩個函式都需要先用 <code>unsafe { std::slice::from_raw_parts(ptr, len) }</code> 將原始指標轉為 Rust 切片。<code>dot_product</code> 可以用 <code>.iter().zip().map().sum()</code> 的迭代器鏈。<code>scale_vector</code> 需要用 <code>from_raw_parts_mut</code> 取得可變切片。</div>
