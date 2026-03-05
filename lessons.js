@@ -111,6 +111,15 @@ null, null)}
         <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
         <div class="hint-content">把空字串替換成實際的值，例如 <code>let name = "Alice";</code>。Rust 字串使用雙引號 <code>"</code>。</div>
     </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn main() {
+    let name = "Alice";
+    let language = "Rust";
+
+    println!("Hi, I'm {} and I love {}!", name, language);
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -232,7 +241,23 @@ print(spaces)
 null, null)}
     <div class="exercise-hint">
         <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
-        <div class="hint-content">第一個問題：<code>count</code> 需要加上 <code>mut</code>。第二個問題：不能改變型別，使用 shadowing（<code>let message = message.len();</code>）來解決。</div>
+        <div class="hint-content">第一個問題：Rust 的變數預設是不可變的，想想要用什麼關鍵字讓變數可以被重新賦值？<br>第二個問題：Rust 不允許改變變數的型別。但有一種方式可以用相同的名稱建立全新的變數，這在第 2 課有介紹過。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn main() {
+    let mut count = 0;
+
+    count = count + 1;
+    count = count + 1;
+    count = count + 1;
+
+    println!("Count: {}", count);
+
+    let message = "hello";
+    let message = message.len(); // shadowing
+    println!("Length: {}", message);
+}</code></pre></div>
     </div>
 </div>
 `
@@ -357,11 +382,33 @@ print(arr[0], len(arr))
     <p class="exercise-desc">完成下面的程式，宣告各種型別的變數並輸出它們。</p>
     ${createPlayground('types-ex1',
 `fn main() {
-    // TODO: 宣告一個 u8 型別的變數 age
-    // TODO: 宣告一個 f64 型別的變數 height
-    // TODO: 宣告一個 tuple 包含 (name, age, height)
-    // TODO: 宣告一個長度為 3 的 i32 陣列
+    // TODO: 宣告一個 u8 型別的變數 age，值為 25
+    // let age ...
 
+    // TODO: 宣告一個 f64 型別的變數 height，值為 175.5
+    // let height ...
+
+    // TODO: 宣告一個 tuple 包含 ("Alice", age, height)
+    // let person = ...
+
+    // TODO: 宣告一個長度為 3 的 i32 陣列 scores，值為 [95, 87, 92]
+    // let scores ...
+
+    // 取消下面的註解來測試你的答案
+    // println!("Name: {}, Age: {}, Height: {:.1}cm",
+    //          person.0, person.1, person.2);
+    // println!("Scores: {:?}", scores);
+    // println!("Average: {:.1}",
+    //          (scores[0] + scores[1] + scores[2]) as f64 / 3.0);
+}`,
+null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">型別標注語法是 <code>let 變數名: 型別 = 值;</code>。Tuple 用小括號 <code>()</code>，陣列用中括號 <code>[]</code> 且型別標注為 <code>[型別; 長度]</code>。存取 tuple 元素用 <code>.0</code>、<code>.1</code> 等。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn main() {
     let age: u8 = 25;
     let height: f64 = 175.5;
     let person = ("Alice", age, height);
@@ -372,8 +419,8 @@ print(arr[0], len(arr))
     println!("Scores: {:?}", scores);
     println!("Average: {:.1}",
              (scores[0] + scores[1] + scores[2]) as f64 / 3.0);
-}`,
-null, null)}
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -500,22 +547,9 @@ a, b = swap(1, 2)
     ${createPlayground('fn-ex1',
 `// TODO: 完成這個函式
 fn fibonacci(n: u32) -> u64 {
-    // 提示：fib(0)=0, fib(1)=1, fib(n)=fib(n-1)+fib(n-2)
-    if n == 0 {
-        return 0;
-    }
-    if n == 1 {
-        return 1;
-    }
-    // 使用迴圈而非遞迴（效率更好）
-    let mut a: u64 = 0;
-    let mut b: u64 = 1;
-    for _ in 2..=n {
-        let temp = a + b;
-        a = b;
-        b = temp;
-    }
-    b
+    // fib(0)=0, fib(1)=1, fib(n)=fib(n-1)+fib(n-2)
+    // 在這裡寫你的實作
+    todo!("實作 fibonacci 函式")
 }
 
 fn main() {
@@ -524,6 +558,25 @@ fn main() {
     }
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">先處理基礎情況（n 為 0 和 1 時直接回傳）。對於較大的 n，可以用迴圈搭配兩個變數追蹤前兩個數字，這比遞迴更有效率。想想 <code>for _ in 2..=n</code> 的用法。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn fibonacci(n: u32) -> u64 {
+    if n == 0 { return 0; }
+    if n == 1 { return 1; }
+    let mut a: u64 = 0;
+    let mut b: u64 = 1;
+    for _ in 2..=n {
+        let temp = a + b;
+        a = b;
+        b = temp;
+    }
+    b
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -673,7 +726,19 @@ fn main() {
 null, null)}
     <div class="exercise-hint">
         <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
-        <div class="hint-content">方法一：改用引用 <code>fn print_length(s: &String)</code> 並呼叫 <code>print_length(&message)</code>。<br>方法二：在呼叫前 <code>clone()</code>：<code>print_length(message.clone())</code>。<br>方法一更好，因為不需要複製資料。</div>
+        <div class="hint-content">問題出在 <code>print_length</code> 取得了 <code>message</code> 的所有權。有兩種解決思路：(1) 讓函式「借用」而不是「擁有」值 — 想想引用 <code>&</code> 的用法；(2) 在傳入前複製一份。哪種方式更有效率？</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn print_length(s: &String) {
+    println!("'{}' has length {}", s, s.len());
+}
+
+fn main() {
+    let message = String::from("Hello, Rust!");
+    print_length(&message);
+    println!("Message was: {}", message);
+}</code></pre></div>
     </div>
 </div>
 `
@@ -800,20 +865,31 @@ print(lst)  # [1, 2, 3, 4]
 `fn main() {
     let mut data = vec![1, 2, 3, 4, 5];
 
-    // 計算總和（不可變借用）
-    let sum: i32 = data.iter().sum();
+    let data_ref = &data;  // 不可變借用
 
-    // 加入新元素（可變借用）
-    data.push(6);
+    data.push(6);  // 嘗試可變借用 — 這裡有錯！
 
-    // 再次計算
-    let new_sum: i32 = data.iter().sum();
-
-    println!("Original sum: {}", sum);
-    println!("New sum: {}", new_sum);
+    println!("Data: {:?}", data_ref);
     println!("Data: {:?}", data);
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">Rust 不允許同時存在不可變引用和可變操作。想想引用的「生命週期」——如果你在 <code>push</code> 之前就完成對 <code>data_ref</code> 的使用，編譯器就不會抱怨了。試著調整程式碼的順序。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn main() {
+    let mut data = vec![1, 2, 3, 4, 5];
+
+    let data_ref = &data;
+    println!("Data: {:?}", data_ref);
+    // data_ref 在這之後不再使用（NLL）
+
+    data.push(6);  // 現在可以可變借用了
+    println!("Data: {:?}", data);
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -919,15 +995,11 @@ print(arr)        # [1, 2, 3, 4, 5]
     <h4>🏋️ 練習：實作字串處理</h4>
     <p class="exercise-desc">實作一個函式，找出字串中最長的單字。</p>
     ${createPlayground('slice-ex1',
-`// 找出最長的單字
+`// TODO: 實作這個函式，找出字串中最長的單字
+// 提示：回傳值是字串切片 &str
 fn longest_word(s: &str) -> &str {
-    let mut longest = "";
-    for word in s.split_whitespace() {
-        if word.len() > longest.len() {
-            longest = word;
-        }
-    }
-    longest
+    // 在這裡寫你的實作
+    todo!("實作 longest_word 函式")
 }
 
 fn main() {
@@ -938,6 +1010,22 @@ fn main() {
     println!("Longest word: '{}'", longest_word(another));
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">可以用 <code>split_whitespace()</code> 來分割單字，然後用一個變數追蹤目前找到的最長單字。比較每個單字的 <code>.len()</code>。初始值可以用空字串 <code>""</code>。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn longest_word(s: &str) -> &str {
+    let mut longest = "";
+    for word in s.split_whitespace() {
+        if word.len() > longest.len() {
+            longest = word;
+        }
+    }
+    longest
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -1089,24 +1177,41 @@ impl Circle {
         Circle { radius }
     }
 
-    // TODO: 實作 area 方法，回傳 PI * r^2
-    fn area(&self) -> f64 {
-        PI * self.radius * self.radius
-    }
+    // TODO: 實作 area 方法，回傳面積（圓面積公式：PI * r^2）
+    // fn area(&self) -> f64 { ... }
 
-    // TODO: 實作 circumference 方法，回傳 2 * PI * r
-    fn circumference(&self) -> f64 {
-        2.0 * PI * self.radius
-    }
+    // TODO: 實作 circumference 方法，回傳周長（圓周長公式：2 * PI * r）
+    // fn circumference(&self) -> f64 { ... }
 }
 
 fn main() {
     let c = Circle::new(5.0);
     println!("Circle: {:?}", c);
-    println!("Area: {:.2}", c.area());
-    println!("Circumference: {:.2}", c.circumference());
+    // 完成上面的方法後，取消下面的註解來測試
+    // println!("Area: {:.2}", c.area());
+    // println!("Circumference: {:.2}", c.circumference());
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">方法的第一個參數是 <code>&self</code>，可以用 <code>self.radius</code> 存取欄位。<code>PI</code> 已經從 <code>std::f64::consts</code> 引入了，直接使用即可。記得方法最後一行不加分號就是回傳值。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>impl Circle {
+    fn new(radius: f64) -> Self {
+        Circle { radius }
+    }
+
+    fn area(&self) -> f64 {
+        PI * self.radius * self.radius
+    }
+
+    fn circumference(&self) -> f64 {
+        2.0 * PI * self.radius
+    }
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -1264,7 +1369,32 @@ if maybe is not None:
     <h4>🏋️ 練習：用 match 處理 Option</h4>
     <p class="exercise-desc">實作一個安全的除法函式，當除數為零時回傳 <code>None</code>。</p>
     ${createPlayground('enum-ex1',
-`fn safe_divide(a: f64, b: f64) -> Option<f64> {
+`// TODO: 實作安全除法函式
+// 當除數為零時回傳 None，否則回傳 Some(結果)
+fn safe_divide(a: f64, b: f64) -> Option<f64> {
+    todo!("實作 safe_divide")
+}
+
+fn main() {
+    let cases = vec![(10.0, 3.0), (10.0, 0.0), (0.0, 5.0)];
+
+    for (a, b) in cases {
+        // TODO: 用 match 處理 safe_divide 的回傳值
+        // Some(result) => 印出 "{a} / {b} = {result:.2}"
+        // None => 印出 "{a} / {b} = undefined (division by zero!)"
+        match safe_divide(a, b) {
+            _ => println!("TODO: 處理結果"),
+        }
+    }
+}`,
+null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content"><code>Option&lt;T&gt;</code> 有兩個變體：<code>Some(值)</code> 和 <code>None</code>。函式中用 <code>if</code> 判斷除數，回傳對應的變體。<code>match</code> 時要分別處理 <code>Some(result)</code> 和 <code>None</code> 兩種情況。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn safe_divide(a: f64, b: f64) -> Option&lt;f64&gt; {
     if b == 0.0 {
         None
     } else {
@@ -1272,17 +1402,12 @@ if maybe is not None:
     }
 }
 
-fn main() {
-    let cases = vec![(10.0, 3.0), (10.0, 0.0), (0.0, 5.0)];
-
-    for (a, b) in cases {
-        match safe_divide(a, b) {
-            Some(result) => println!("{} / {} = {:.2}", a, b, result),
-            None => println!("{} / {} = undefined (division by zero!)", a, b),
-        }
-    }
-}`,
-null, null)}
+// match 部分：
+match safe_divide(a, b) {
+    Some(result) => println!("{} / {} = {:.2}", a, b, result),
+    None => println!("{} / {} = undefined (division by zero!)", a, b),
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -1417,23 +1542,17 @@ except ValueError as e:
     ${createPlayground('err-ex1',
 `use std::num::ParseIntError;
 
+// TODO: 完成這個計算函式
+// 1. 將字串 a, b 解析為 i32（用 .parse() 和 ? 運算子）
+// 2. 根據 op 執行對應的運算（+, -, *, /）
+// 3. 除法要檢查除數是否為零
+// 4. 未知運算子要回傳錯誤
 fn calculate(a: &str, b: &str, op: &str) -> Result<i32, String> {
-    let x: i32 = a.parse().map_err(|e: ParseIntError| e.to_string())?;
-    let y: i32 = b.parse().map_err(|e: ParseIntError| e.to_string())?;
+    // 提示：用 .parse().map_err(|e: ParseIntError| e.to_string())? 轉換字串
+    let x: i32 = todo!("解析 a");
+    let y: i32 = todo!("解析 b");
 
-    match op {
-        "+" => Ok(x + y),
-        "-" => Ok(x - y),
-        "*" => Ok(x * y),
-        "/" => {
-            if y == 0 {
-                Err("Division by zero".to_string())
-            } else {
-                Ok(x / y)
-            }
-        }
-        _ => Err(format!("Unknown operator: {}", op)),
-    }
+    todo!("根據 op 執行運算")
 }
 
 fn main() {
@@ -1452,6 +1571,31 @@ fn main() {
     }
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">用 <code>?</code> 運算子可以自動傳播錯誤。字串解析用 <code>a.parse::&lt;i32&gt;()</code>，但因為回傳的錯誤型別不同，需要用 <code>.map_err()</code> 轉換。運算子部分可以用 <code>match op { "+" => ..., _ => ... }</code> 處理。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn calculate(a: &str, b: &str, op: &str) -> Result&lt;i32, String&gt; {
+    let x: i32 = a.parse().map_err(|e: ParseIntError| e.to_string())?;
+    let y: i32 = b.parse().map_err(|e: ParseIntError| e.to_string())?;
+
+    match op {
+        "+" => Ok(x + y),
+        "-" => Ok(x - y),
+        "*" => Ok(x * y),
+        "/" => {
+            if y == 0 {
+                Err("Division by zero".to_string())
+            } else {
+                Ok(x / y)
+            }
+        }
+        _ => Err(format!("Unknown operator: {}", op)),
+    }
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -1621,23 +1765,11 @@ def notify(item):  # 只要有 summarize 方法就行
 struct Circle { radius: f64 }
 struct Square { side: f64 }
 
-impl Area for Circle {
-    fn area(&self) -> f64 {
-        std::f64::consts::PI * self.radius * self.radius
-    }
-    fn description(&self) -> String {
-        format!("Circle(r={})", self.radius)
-    }
-}
+// TODO: 為 Circle 實作 Area trait
+// impl Area for Circle { ... }
 
-impl Area for Square {
-    fn area(&self) -> f64 {
-        self.side * self.side
-    }
-    fn description(&self) -> String {
-        format!("Square(s={})", self.side)
-    }
-}
+// TODO: 為 Square 實作 Area trait
+// impl Area for Square { ... }
 
 fn print_area(shape: &dyn Area) {
     println!("{}: area = {:.2}", shape.description(), shape.area());
@@ -1655,6 +1787,30 @@ fn main() {
     }
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">語法是 <code>impl TraitName for StructName { ... }</code>。你需要實作 trait 定義的所有方法。<code>area</code> 回傳 <code>f64</code>，<code>description</code> 回傳 <code>String</code>（可以用 <code>format!()</code>）。圓面積 = PI * r²，正方形面積 = side²。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>impl Area for Circle {
+    fn area(&self) -> f64 {
+        std::f64::consts::PI * self.radius * self.radius
+    }
+    fn description(&self) -> String {
+        format!("Circle(r={})", self.radius)
+    }
+}
+
+impl Area for Square {
+    fn area(&self) -> f64 {
+        self.side * self.side
+    }
+    fn description(&self) -> String {
+        format!("Square(s={})", self.side)
+    }
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -1770,24 +1926,32 @@ print(result)  # 永遠安全
     <h4>🏋️ 練習：修復生命週期</h4>
     <p class="exercise-desc">這段程式碼需要生命週期標注才能編譯。請加上正確的標注。</p>
     ${createPlayground('life-ex1',
-`// 加上生命週期標注讓這個函式能編譯
-fn first_word<'a>(s: &'a str) -> &'a str {
-    match s.find(' ') {
-        Some(pos) => &s[..pos],
-        None => s,
-    }
+`// TODO: 加上生命週期標注讓這個函式能編譯
+// 目前會報錯：missing lifetime specifier
+fn longest(x: &str, y: &str) -> &str {
+    if x.len() > y.len() { x } else { y }
 }
 
 fn main() {
-    let text = String::from("Hello beautiful world");
-    let word = first_word(&text);
-    println!("First word: '{}'", word);
-
-    // 字串字面量有 'static 生命週期
-    let word2 = first_word("Rust is great");
-    println!("First word: '{}'", word2);
+    let result;
+    let s1 = String::from("long string");
+    {
+        let s2 = String::from("hi");
+        result = longest(s1.as_str(), s2.as_str());
+        println!("Longest: '{}'", result);
+    }
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">當函式接受多個引用並回傳引用時，編譯器需要知道回傳值的生命週期和哪個輸入相關。用 <code>&lt;'a&gt;</code> 宣告生命週期參數，然後標注在參數和回傳值上。想想：回傳值最多能活多久？</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn longest&lt;'a&gt;(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() > y.len() { x } else { y }
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -1924,13 +2088,14 @@ for name, score in scores.items():
     ${createPlayground('coll-ex1',
 `use std::collections::HashMap;
 
+// TODO: 實作單字計數器
+// 將文字中的每個單字（轉小寫）計數，回傳 HashMap
 fn word_count(text: &str) -> HashMap<String, usize> {
     let mut counts = HashMap::new();
-    for word in text.split_whitespace() {
-        let word = word.to_lowercase();
-        let count = counts.entry(word).or_insert(0);
-        *count += 1;
-    }
+    // 在這裡寫你的實作
+    // 1. 用 split_whitespace() 分割單字
+    // 2. 將每個單字轉小寫
+    // 3. 更新 HashMap 中的計數
     counts
 }
 
@@ -1947,6 +2112,22 @@ fn main() {
     }
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">HashMap 的 <code>.entry(key).or_insert(default)</code> 方法很好用——它回傳值的可變引用。如果 key 不存在就插入預設值。拿到引用後可以用 <code>*count += 1</code> 來增加計數。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>fn word_count(text: &str) -> HashMap&lt;String, usize&gt; {
+    let mut counts = HashMap::new();
+    for word in text.split_whitespace() {
+        let word = word.to_lowercase();
+        let count = counts.entry(word).or_insert(0);
+        *count += 1;
+    }
+    counts
+}</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -2088,34 +2269,51 @@ records = list(zip(names, scores))
         ("Diana", vec![60, 55, 70]),
     ];
 
-    // 計算每位學生的平均分數
-    let averages: Vec<(&str, f64)> = students.iter()
-        .map(|(name, scores)| {
-            let avg = scores.iter().sum::<i32>() as f64
-                      / scores.len() as f64;
-            (*name, avg)
-        })
-        .collect();
+    // TODO 1: 用 .iter().map().collect() 計算每位學生的平均分數
+    // 結果型別為 Vec<(&str, f64)>
+    let averages: Vec<(&str, f64)> = vec![]; // 替換這行
 
     println!("Averages:");
     for (name, avg) in &averages {
         println!("  {}: {:.1}", name, avg);
     }
 
-    // 找出平均 >= 85 的優等生
-    let honors: Vec<&str> = averages.iter()
-        .filter(|(_, avg)| *avg >= 85.0)
-        .map(|(name, _)| *name)
-        .collect();
+    // TODO 2: 用 .iter().filter().map().collect() 找出平均 >= 85 的優等生
+    let honors: Vec<&str> = vec![]; // 替換這行
     println!("Honors: {:?}", honors);
 
-    // 全班最高平均
-    let top = averages.iter()
-        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
-        .unwrap();
-    println!("Top student: {} ({:.1})", top.0, top.1);
+    // TODO 3: 用 .iter().max_by() 找出全班最高平均的學生
+    // let top = averages.iter()...
+    // println!("Top student: {} ({:.1})", top.0, top.1);
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content">TODO 1: 在 <code>map</code> 中用 <code>scores.iter().sum::&lt;i32&gt;() as f64 / scores.len() as f64</code> 計算平均。<br>TODO 2: <code>filter</code> 接受閉包檢查條件，<code>map</code> 可以只取出名字。<br>TODO 3: <code>max_by</code> 需要一個比較函式，浮點數比較用 <code>partial_cmp</code>。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>// TODO 1:
+let averages: Vec<(&str, f64)> = students.iter()
+    .map(|(name, scores)| {
+        let avg = scores.iter().sum::&lt;i32&gt;() as f64
+                  / scores.len() as f64;
+        (*name, avg)
+    })
+    .collect();
+
+// TODO 2:
+let honors: Vec<&str> = averages.iter()
+    .filter(|(_, avg)| *avg >= 85.0)
+    .map(|(name, _)| *name)
+    .collect();
+
+// TODO 3:
+let top = averages.iter()
+    .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+    .unwrap();
+println!("Top student: {} ({:.1})", top.0, top.1);</code></pre></div>
+    </div>
 </div>
 `
 },
@@ -2279,35 +2477,57 @@ fn main() {
         3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9
     ]);
 
-    // 執行緒 1: 計算總和
-    let d1 = Arc::clone(&data);
-    let sum_handle = thread::spawn(move || -> i32 {
-        d1.iter().sum()
-    });
+    // TODO: 建立 3 個執行緒並行計算不同的統計值
+    // 每個執行緒需要用 Arc::clone(&data) 取得資料的共享引用
 
-    // 執行緒 2: 找最大值
-    let d2 = Arc::clone(&data);
-    let max_handle = thread::spawn(move || -> i32 {
-        *d2.iter().max().unwrap()
-    });
+    // 執行緒 1: 計算總和（回傳 i32）
+    // let d1 = Arc::clone(&data);
+    // let sum_handle = thread::spawn(move || -> i32 { ... });
 
-    // 執行緒 3: 計算偶數個數
-    let d3 = Arc::clone(&data);
-    let even_handle = thread::spawn(move || -> usize {
-        d3.iter().filter(|&&x| x % 2 == 0).count()
-    });
+    // 執行緒 2: 找最大值（回傳 i32）
+    // let d2 = ...
+    // let max_handle = ...
 
-    let sum = sum_handle.join().unwrap();
-    let max = max_handle.join().unwrap();
-    let even_count = even_handle.join().unwrap();
+    // 執行緒 3: 計算偶數個數（回傳 usize）
+    // let d3 = ...
+    // let even_handle = ...
+
+    // TODO: 用 .join().unwrap() 取得每個執行緒的結果
+    // let sum = sum_handle.join().unwrap();
+    // ...
 
     println!("Data: {:?}", *data);
-    println!("Sum: {}", sum);
-    println!("Max: {}", max);
-    println!("Even count: {}", even_count);
-    println!("Average: {:.2}", sum as f64 / data.len() as f64);
+    // println!("Sum: {}", sum);
+    // println!("Max: {}", max);
+    // println!("Even count: {}", even_count);
+    // println!("Average: {:.2}", sum as f64 / data.len() as f64);
 }`,
 null, null)}
+    <div class="exercise-hint">
+        <button class="hint-toggle" onclick="toggleHint(this)">💡 顯示提示</button>
+        <div class="hint-content"><code>Arc::clone(&data)</code> 建立共享引用，搭配 <code>move</code> 閉包讓執行緒取得所有權。<code>thread::spawn</code> 回傳 <code>JoinHandle</code>，用 <code>.join().unwrap()</code> 等待結果。迭代器的 <code>.sum()</code>、<code>.max()</code>、<code>.filter().count()</code> 可以分別計算三種統計值。</div>
+    </div>
+    <div class="exercise-answer">
+        <button class="answer-toggle" onclick="toggleAnswer(this)">📖 顯示正解</button>
+        <div class="answer-content"><pre><code>let d1 = Arc::clone(&data);
+let sum_handle = thread::spawn(move || -> i32 {
+    d1.iter().sum()
+});
+
+let d2 = Arc::clone(&data);
+let max_handle = thread::spawn(move || -> i32 {
+    *d2.iter().max().unwrap()
+});
+
+let d3 = Arc::clone(&data);
+let even_handle = thread::spawn(move || -> usize {
+    d3.iter().filter(|&&x| x % 2 == 0).count()
+});
+
+let sum = sum_handle.join().unwrap();
+let max = max_handle.join().unwrap();
+let even_count = even_handle.join().unwrap();</code></pre></div>
+    </div>
 </div>
 `
 },

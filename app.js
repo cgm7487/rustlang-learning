@@ -174,6 +174,14 @@ function toggleHint(btn) {
     btn.textContent = isShowing ? '💡 顯示提示' : '💡 隱藏提示';
 }
 
+/* ---- Answer Toggle ---- */
+function toggleAnswer(btn) {
+    const content = btn.nextElementSibling;
+    const isShowing = content.classList.contains('show');
+    content.classList.toggle('show');
+    btn.textContent = isShowing ? '📖 顯示正解' : '📖 隱藏正解';
+}
+
 /* ---- Keyboard Shortcuts ---- */
 function setupKeyboard() {
     document.addEventListener('keydown', (e) => {
